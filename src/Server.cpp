@@ -450,7 +450,7 @@ bool Server::index(const String &args,
                    const Path &projectRootOverride,
                    Flags<IndexMessage::Flag> indexMessageFlags,
                    std::shared_ptr<Project> *projectPtr,
-                   Set<uint64_t> *indexed)
+                   Set<Source> *indexed)
 {
     if (Sandbox::hasRoot() && !projectRootOverride.isEmpty() && !projectRootOverride.startsWith(Sandbox::root())) {
         error("Invalid --project-root '%s', must be inside --sandbox-root '%s'",
@@ -529,7 +529,7 @@ bool Server::index(const String &args,
                 assert(project);
             }
             if (indexed)
-                indexed->insert(source.key());
+                indexed->insert(source);
             if (!mCurrentProject.lock())
                 setCurrentProject(project);
             project->index(std::shared_ptr<IndexerJob>(new IndexerJob(source, IndexerJob::Compile, project)));
@@ -1803,11 +1803,11 @@ void Server::handleVisitFileMessage(const std::shared_ptr<VisitFileMessage> &mes
     bool visit = false;
 
     std::shared_ptr<Project> project = mProjects.value(message->project());
-    const uint64_t key = message->key();
-    if (project && project->isActiveJob(key)) {
+    const uint64_t id = message->id();
+    if (project && project->isActiveJob(id)) {
         assert(message->file() == message->file().resolved());
         fileId = Location::insertFile(message->file());
-        visit = project->visitFile(fileId, message->file(), key);
+        visit = project->visitFile(fileId, message->file(), id);
     }
     VisitFileResponseMessage msg(fileId, visit);
     conn->send(msg);

@@ -914,7 +914,7 @@ public:
     }
     Hash<Path, CompilationDataBaseInfo> infos;
     const Path projectRootOverride;
-    Set<uint64_t> indexed;
+    Set<Source> indexed;
     std::shared_ptr<Project> project;
     List<Index> indexes;
     size_t indexIndex;

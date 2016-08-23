@@ -147,21 +147,6 @@ struct Source
     bool isValid() const { return fileId; }
     bool isNull() const  { return !fileId; }
 
-    uint64_t key() const { return key(fileId, buildRootId); }
-
-    static inline uint64_t key(uint32_t fileId, uint32_t buildRootId)
-    {
-        uint64_t ret = fileId;
-        ret <<= 32;
-        ret |= buildRootId;
-        return ret;
-    }
-    static inline void decodeKey(uint64_t key, uint32_t &fileId, uint32_t &buildRootId)
-    {
-        fileId = static_cast<uint32_t>(key >> 32);
-        buildRootId = static_cast<uint32_t>(key);
-    }
-
     int compare(const Source &other) const;
     bool compareArguments(const Source &other) const;
     bool operator==(const Source &other) const;
@@ -169,8 +154,7 @@ struct Source
     bool operator<(const Source &other) const;
     bool operator>(const Source &other) const;
 
-    List<String> toCommandLine(Flags<CommandLineFlag> flags = Flags<CommandLineFlag>(),
-                               bool *usedPch = 0) const;
+    List<String> toCommandLine(Flags<CommandLineFlag> flags = Flags<CommandLineFlag>(), bool *usedPch = 0) const;
     inline bool isIndexable() const;
     static inline bool isIndexable(Language lang);
 

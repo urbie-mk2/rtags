@@ -24,6 +24,7 @@
 #include "rct/String.h"
 #include "rct/Thread.h"
 #include "Source.h"
+#include "RTags.h"
 #ifdef OS_Darwin
 #include <Availability.h>
 #if __MAC_OS_X_VERSION_MAX_ALLOWED >= 101000
@@ -129,7 +130,7 @@ public:
                const Path &projectRootOverride,
                Flags<IndexMessage::Flag> flags = Flags<IndexMessage::Flag>(),
                std::shared_ptr<Project> *projectPtr = 0,
-               Set<uint64_t> *indexed = 0);
+               Set<Source> *indexed = 0);
     enum FileIdsFileFlag {
         None = 0x0,
         HasSandboxRoot = 0x1

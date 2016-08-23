@@ -67,7 +67,7 @@ public:
     std::shared_ptr<FileManager> fileManager() const { return mFileManager; }
 
     Path path() const { return mPath; }
-    void setCompilationDatabaseInfos(Hash<Path, CompilationDataBaseInfo> &&infos, const Set<uint64_t> &indexed);
+    void setCompilationDatabaseInfos(Hash<Path, CompilationDataBaseInfo> &&infos, const Set<Source> &indexed);
     void addCompilationDatabaseInfo(const Path &path, CompilationDataBaseInfo &&info);
     Hash<Path, CompilationDataBaseInfo> compilationDataBaseInfos() const { return mCompilationDatabaseInfos; }
 
@@ -183,7 +183,7 @@ public:
     void index(const std::shared_ptr<IndexerJob> &job);
     List<Source> sources(uint32_t fileId) const;
     bool hasSource(uint32_t fileId) const;
-    bool isActiveJob(uint64_t key) { return !key || mActiveJobs.contains(key); }
+    bool isActiveJob(uint64_t id) { return !id || mActiveJobs.contains(id); }
     inline bool visitFile(uint32_t fileId, const Path &path, uint64_t id);
     inline void releaseFileIds(const Set<uint32_t> &fileIds);
     String fixIts(uint32_t fileId) const;
@@ -235,6 +235,8 @@ public:
     void fixPCH(Source &source);
     void includeCompletions(Flags<QueryMessage::Flag> flags, const std::shared_ptr<Connection> &conn, Source &&source) const;
     size_t bytesWritten() const { return mBytesWritten; }
+    Sources::const_iterator find(const Source &source) const;
+    Sources::iterator find(const Source &source);
 private:
     void reloadCompilationDatabases();
     void removeSource(Sources::iterator it);
@@ -376,7 +378,7 @@ private:
 
     Diagnostics mDiagnostics;
 
-    // key'ed on Source::key()
+    // key'ed on IndexerJob::id
     Hash<uint64_t, std::shared_ptr<IndexerJob> > mActiveJobs;
 
     Timer mDirtyTimer;
@@ -399,15 +401,15 @@ private:
 
 RCT_FLAGS(Project::WatchMode);
 
-inline bool Project::visitFile(uint32_t visitFileId, const Path &path, uint64_t key)
+inline bool Project::visitFile(uint32_t visitFileId, const Path &path, uint64_t id)
 {
-    assert(key);
+    assert(id);
     std::lock_guard<std::mutex> lock(mMutex);
     assert(visitFileId);
     Path &p = mVisitedFiles[visitFileId];
-    assert(key);
-    assert(mActiveJobs.contains(key));
-    std::shared_ptr<IndexerJob> &job = mActiveJobs[key];
+    assert(id);
+    assert(mActiveJobs.contains(id));
+    std::shared_ptr<IndexerJob> &job = mActiveJobs[id];
     assert(job);
     if (p.isEmpty()) {
         p = path;

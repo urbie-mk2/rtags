@@ -41,13 +41,26 @@ public:
     IndexerJob(const Source &source,
                Flags<Flag> flags,
                const std::shared_ptr<Project> &project,
-               const UnsavedFiles &unsavedFiles = UnsavedFiles());
+               const UnsavedFiles &unsavedFiles = UnsavedFiles())
+    {
+        init(List<Source>() << source, flags, project, unsavedFiles);
+    }
+    IndexerJob(const List<Source> &sources,
+               Flags<Flag> flags,
+               const std::shared_ptr<Project> &project,
+               const UnsavedFiles &unsavedFiles = UnsavedFiles())
+    {
+        init(sources, flags, project, unsavedFiles);
+    }
     ~IndexerJob();
+
     void acquireId();
     String encode() const;
 
+    uint32_t fileId() const { assert(!sources.isEmpty()); return sources.front().fileId; }
+
     uint64_t id;
-    Source source;
+    List<Source> sources;
     Path sourceFile;
     Flags<Flag> flags;
     Path project;
@@ -58,6 +71,10 @@ public:
     int crashCount;
     Signal<std::function<void(IndexerJob *)> > destroyed;
 private:
+    void init(const List<Source> &source,
+              Flags<Flag> flags,
+              const std::shared_ptr<Project> &project,
+              const UnsavedFiles &unsavedFiles = UnsavedFiles());
     static uint64_t sNextId;
 };
 
